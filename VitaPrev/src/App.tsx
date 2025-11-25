@@ -5,9 +5,10 @@ import Login from "./components/auth/Login";
 import Logout from "./components/auth/Logout";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import ProfilePage from "./components/Profile/ProfilePage";
-
+import HealthMetricsPage from "./components/HealthMetrics.tsx/HealtMetricPage";
 import LandingPage from "./components/Landing/LandingPage";
-import Layout from "./components/layout/Layout";
+import Layout from "./components/ui/Layout";
+import GoalsPage from "./components/GoalPage/GoalPage";
 
 function App() {
   return (
@@ -18,22 +19,12 @@ function App() {
         <Route path="/auth/signup" element={<Register />} />
         <Route path="/auth/signin" element={<Login />} />
 
-        {/* TODAS ESTAS COMPARTEN EL MISMO LAYOUT */}
-        <Route
-          element={
-            <ProtectedRoute>
-              <Layout />
-            </ProtectedRoute>
-          }
-        >
-          {/* HOME DEL DASHBOARD */}
+        <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
           <Route path="/dashboard" element={<div>Bienvenido a VitaPrev 💚</div>} />
-
-          {/* RUTAS PRIVADAS */}
-          <Route path="/metricas" element={<div>Métricas de salud</div>} />
+          <Route path="/metricas" element={<HealthMetricsPage />} />
           <Route path="/registro-comida" element={<div>Registro de comidas</div>} />
           <Route path="/recomendaciones" element={<div>Recomendaciones</div>} />
-          <Route path="/metas" element={<div>Metas</div>} />
+          <Route path="/metas" element={<GoalsPage />} />
           <Route path="/user/me" element={<ProfilePage />} />
           <Route path="/auth/logout" element={<Logout />} />
         </Route>

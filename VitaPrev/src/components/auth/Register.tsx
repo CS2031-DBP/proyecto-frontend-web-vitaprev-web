@@ -5,7 +5,6 @@ import { useAuth } from "./useAuth";
 import AuthTabs from "./Authtabs";
 import DatePicker from "react-datepicker";
 
-
 export default function RegisterPage() {
   const [error, setError] = useState("");
   const [name, setName] = useState("");
@@ -27,67 +26,62 @@ export default function RegisterPage() {
   const navigate = useNavigate();
   const auth = useAuth();
 
-
   const handleRegister = (e: SyntheticEvent) => {
-  e.preventDefault();
-  setError("");
+    e.preventDefault();
+    setError("");
 
-  if (password !== confirmPassword) {
-    setError("Las contraseñas no coinciden");
-    return;
-  }
+    if (password !== confirmPassword) {
+      setError("Las contraseñas no coinciden");
+      return;
+    }
 
-  if (!birthDate) {
-    setError("La fecha de nacimiento es obligatoria");
-    return;
-  }
+    if (!birthDate) {
+      setError("La fecha de nacimiento es obligatoria");
+      return;
+    }
 
-  if (diabetic && lastGlucose.trim() === "") {
-    setError("Ingresa tu último registro de glucosa");
-    return;
-  }
+    if (diabetic && lastGlucose.trim() === "") {
+      setError("Ingresa tu último registro de glucosa");
+      return;
+    }
 
-  if (hypertensive && lastPressure.trim() === "") {
-    setError("Ingresa tu último registro de presión arterial");
-    return;
-  }
+    if (hypertensive && lastPressure.trim() === "") {
+      setError("Ingresa tu último registro de presión arterial");
+      return;
+    }
 
-  auth
-    .register(
-      name,
-      lastName,
-      email,
-      phone,
-      genre,
-      Number(weight),
-      Number(height),
-      birthDate,
-      allergies,
-      diabetic,
-      hypertensive,
-      lastGlucose,
-      lastPressure,
-      password
-    )
-    .then(() => navigate("/dashboard", { replace: true }))
-    .catch((err: AxiosError) => {
-      console.error("Signup error:", err.response?.status, err.response?.data);
-      setError(
-        typeof err.response?.data === "string"
-          ? err.response.data
-          : "Error al registrarse"
-      );
-    });
-};
-
-
+    auth
+      .register(
+        name,
+        lastName,
+        email,
+        phone,
+        genre,
+        Number(weight),
+        Number(height),
+        birthDate,
+        allergies,
+        diabetic,
+        hypertensive,
+        lastGlucose,
+        lastPressure,
+        password
+      )
+      .then(() => navigate("/dashboard", { replace: true }))
+      .catch((err: AxiosError) => {
+        console.error("Signup error:", err.response?.status, err.response?.data);
+        setError(
+          typeof err.response?.data === "string"
+            ? err.response.data
+            : "Error al registrarse"
+        );
+      });
+  };
 
   return (
     <div className="flex justify-center bg-emerald-50 py-10 min-h-[80vh]">
       <div className="w-full max-w-5xl grid grid-cols-1 auto-rows-max gap-8 p-4 justify-items-center">
-    
         <div className="bg-white rounded-3xl shadow-md p-8 flex flex-col justify-start">
-
           <AuthTabs />
 
           <div className="mb-6">
@@ -105,13 +99,19 @@ export default function RegisterPage() {
             </div>
           )}
 
-          <form onSubmit={handleRegister} className="space-y-4 text-sm">
-
+          {/* 🔒 Formulario sin autocomplete */}
+          <form
+            onSubmit={handleRegister}
+            className="space-y-4 text-sm"
+            autoComplete="off"
+          >
             {/* Nombre y Apellidos */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
                 <label className="block text-slate-700 mb-1">Nombre</label>
                 <input
+                  name="reg_name"
+                  autoComplete="off"
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -121,6 +121,8 @@ export default function RegisterPage() {
               <div>
                 <label className="block text-slate-700 mb-1">Apellidos</label>
                 <input
+                  name="reg_lastName"
+                  autoComplete="off"
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
@@ -134,6 +136,8 @@ export default function RegisterPage() {
                 <label className="block text-slate-700 mb-1">Correo</label>
                 <input
                   type="email"
+                  name="reg_email"
+                  autoComplete="off"
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   value={email}
                   placeholder="tucorreo@ejemplo.com"
@@ -144,6 +148,8 @@ export default function RegisterPage() {
               <div>
                 <label className="block text-slate-700 mb-1">Teléfono</label>
                 <input
+                  name="reg_phone"
+                  autoComplete="off"
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
@@ -153,75 +159,81 @@ export default function RegisterPage() {
 
             {/* Género - Fecha - Peso - Altura */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-
-            {/* Género */}
-            <div>
+              {/* Género */}
+              <div>
                 <label className="block text-slate-700 mb-1">Género</label>
                 <select
-                className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                value={genre}
-                onChange={(e) => setGenre(e.target.value)}
+                  name="reg_genre"
+                  autoComplete="off"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  value={genre}
+                  onChange={(e) => setGenre(e.target.value)}
                 >
-                <option value="">Seleccionar</option>
-                <option value="masculino">Masculino</option>
-                <option value="femenino">Femenino</option>
-                <option value="otro">Otro</option>
+                  <option value="">Seleccionar</option>
+                  <option value="masculino">Masculino</option>
+                  <option value="femenino">Femenino</option>
+                  <option value="otro">Otro</option>
                 </select>
-            </div>
+              </div>
 
-            {/* Fecha nacimiento */}
-            <div>
-                <label className="block text-slate-700 mb-1">Fecha de nacimiento</label>
+              {/* Fecha nacimiento */}
+              <div>
+                <label className="block text-slate-700 mb-1">
+                  Fecha de nacimiento
+                </label>
 
                 <DatePicker
-                selected={birthDate}
-                onChange={(date) => setBirthDate(date)}
-                dateFormat="dd-MM-yyyy"
-                placeholderText="dd-MM-yyyy"
-                minDate={new Date(1900, 0, 1)}
-                maxDate={new Date()}
-                className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  selected={birthDate}
+                  onChange={(date) => setBirthDate(date)}
+                  dateFormat="dd-MM-yyyy"
+                  placeholderText="dd-MM-yyyy"
+                  minDate={new Date(1900, 0, 1)}
+                  maxDate={new Date()}
+                  // el DatePicker ya suele poner autocomplete=off en el input interno
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
-            </div>
+              </div>
 
-            {/* Peso */}
-            <div>
+              {/* Peso */}
+              <div>
                 <label className="block text-slate-700 mb-1">Peso (kg)</label>
                 <input
-                type="number"
-                min={0}
-                max={300}
-                className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                value={weight}
-                onChange={(e) => {
+                  type="number"
+                  name="reg_weight"
+                  autoComplete="off"
+                  min={0}
+                  max={300}
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  value={weight}
+                  onChange={(e) => {
                     const value = Number(e.target.value);
                     if (value < 0) return;
                     setWeight(e.target.value);
-                }}
+                  }}
                 />
-            </div>
+              </div>
 
-            {/* Altura */}
-            <div>
+              {/* Altura */}
+              <div>
                 <label className="block text-slate-700 mb-1">Altura (cm)</label>
                 <input
-                type="number"
-                min={0}
-                className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                value={height}
-                onChange={(e) => setHeight(e.target.value)}
+                  type="number"
+                  name="reg_height"
+                  autoComplete="off"
+                  min={0}
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  value={height}
+                  onChange={(e) => setHeight(e.target.value)}
                 />
+              </div>
             </div>
-
-            </div>
-
-
-            
 
             {/* Alergias */}
             <div>
               <label className="block text-slate-700 mb-1">Alergias</label>
               <input
+                name="reg_allergies"
+                autoComplete="off"
                 className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 value={allergies}
                 onChange={(e) => setAllergies(e.target.value)}
@@ -234,7 +246,6 @@ export default function RegisterPage() {
               <div>
                 <p className="text-slate-700 mb-1">¿Diabetes?</p>
                 <div className="flex gap-2">
-                    
                   <button
                     type="button"
                     className={`px-3 py-1.5 rounded-full border text-xs ${
@@ -259,20 +270,22 @@ export default function RegisterPage() {
                   </button>
                 </div>
                 {diabetic && (
-                    <div className="mt-2">
-                        <label className="block text-slate-700 mb-1">
-                        Último registro de glucosa (mg/dL)
-                        </label>
-                        <input
-                        type="number"
-                        className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:ring-2 focus:ring-emerald-500"
-                        value={lastGlucose}
-                        min={0}
-                        onChange={(e) => setLastGlucose(e.target.value)}
-                        />
-                    </div>
-                    )}
-                </div>
+                  <div className="mt-2">
+                    <label className="block text-slate-700 mb-1">
+                      Último registro de glucosa (mg/dL)
+                    </label>
+                    <input
+                      type="number"
+                      name="reg_lastGlucose"
+                      autoComplete="off"
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:ring-2 focus:ring-emerald-500"
+                      value={lastGlucose}
+                      min={0}
+                      onChange={(e) => setLastGlucose(e.target.value)}
+                    />
+                  </div>
+                )}
+              </div>
 
               <div>
                 <p className="text-slate-700 mb-1">¿Hipertensión?</p>
@@ -301,18 +314,20 @@ export default function RegisterPage() {
                   </button>
                 </div>
                 {hypertensive && (
-                <div className="mt-2">
+                  <div className="mt-2">
                     <label className="block text-slate-700 mb-1">
-                    Último registro de presión arterial (mmHg)
+                      Último registro de presión arterial (mmHg)
                     </label>
                     <input
-                    type="text"
-                    placeholder="Ej. 120/80"
-                    className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:ring-2 focus:ring-emerald-500"
-                    value={lastPressure}
-                    onChange={(e) => setLastPressure(e.target.value)}
+                      type="text"
+                      name="reg_lastPressure"
+                      autoComplete="off"
+                      placeholder="Ej. 120/80"
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:ring-2 focus:ring-emerald-500"
+                      value={lastPressure}
+                      onChange={(e) => setLastPressure(e.target.value)}
                     />
-                </div>
+                  </div>
                 )}
               </div>
             </div>
@@ -322,20 +337,27 @@ export default function RegisterPage() {
               <label className="block text-slate-700 mb-1">Contraseña</label>
               <input
                 type="password"
+                name="reg_password"
+                autoComplete="new-password"
                 className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
+
             {/* Confirmar contraseña */}
             <div>
-                <label className="block text-slate-700 mb-1">Confirmar contraseña</label>
-                <input
-                    type="password"
-                    className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                />
+              <label className="block text-slate-700 mb-1">
+                Confirmar contraseña
+              </label>
+              <input
+                type="password"
+                name="reg_password_confirm"
+                autoComplete="new-password"
+                className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
             </div>
 
             <button className="w-full mt-1 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 transition-colors">
@@ -345,7 +367,10 @@ export default function RegisterPage() {
 
           <p className="mt-5 text-[12px] text-slate-500 text-center">
             ¿Ya tienes cuenta?{" "}
-            <Link to="/auth/signin" className="text-emerald-600 font-medium hover:underline">
+            <Link
+              to="/auth/signin"
+              className="text-emerald-600 font-medium hover:underline"
+            >
               Inicia sesión
             </Link>
           </p>

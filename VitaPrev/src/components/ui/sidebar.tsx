@@ -84,10 +84,10 @@ export const DesktopSidebar = ({
   return (
     <motion.div
       className={cn(
-  "fixed left-0 top-0 h-screen bg-neutral-900 px-4 py-6 hidden md:flex md:flex-col",
-  "shadow-lg overflow-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]",
-  className
-)}
+        "fixed left-0 top-0 h-screen bg-neutral-900 px-4 py-6 hidden md:flex md:flex-col",
+        "shadow-lg overflow-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]",
+        className
+      )}
       animate={{
         width: animate ? (open ? "280px" : "80px") : "280px",
       }}
@@ -110,14 +110,12 @@ export const MobileSidebar = ({
   return (
     <div
       className={cn(
-        "h-10 px-4 py-4 flex md:hidden items-center justify-between bg-neutral-900 w-full"
+        "h-10 px-4 py-4 flex md:hidden items-center justify-between bg-neutral-900 w-full",
+        className
       )}
       {...props}
     >
-      <IconMenu2
-        className="text-white"
-        onClick={() => setOpen(!open)}
-      />
+      <IconMenu2 className="text-white" onClick={() => setOpen(!open)} />
 
       <AnimatePresence>
         {open && (
@@ -146,18 +144,14 @@ export const MobileSidebar = ({
 export const SidebarLink = ({
   link,
   className,
-  ...props
 }: {
   link: Links;
   className?: string;
-} & React.AnchorHTMLAttributes<HTMLAnchorElement>) => {
+}) => {
   const { open } = useSidebar();
+
   return (
-    <Link
-      to={link.href}
-      className={cn("flex items-center gap-3 py-3", className)}
-      {...props}
-    >
+    <Link to={link.href} className={cn("flex items-center gap-3 py-3", className)}>
       {link.icon}
 
       <motion.span
