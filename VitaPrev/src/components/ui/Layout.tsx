@@ -5,7 +5,7 @@ import {
   SidebarLink,
   useSidebar,
 } from "./sidebar";
-import { cn } from "../lib/utils";
+import { cn } from "@/lib/utils";
 
 import {
   IconArrowLeft,
@@ -50,25 +50,38 @@ function MainContent() {
 
 export default function Layout() {
   const links = [
-    {
-      label: "Dashboard",
-      href: "/dashboard",
-      icon: <IconPresentationAnalytics />,
-    },
-    { label: "Métricas de salud", href: "/metricas", icon: <IconHeartbeat /> },
-    {
-      label: "Registro de Comidas",
-      href: "/registro-comida",
-      icon: <IconApple />,
-    },
-    {
-      label: "Recomendaciones saludables",
-      href: "/recomendaciones",
-      icon: <IconChefHat />,
-    },
-    { label: "Metas", href: "/metas", icon: <IconTarget /> },
-    { label: "Cerrar sesión", href: "/auth/logout", icon: <IconArrowLeft /> },
-  ];
+  {
+    label: "Dashboard",
+    href: "/dashboard",
+    icon: <IconPresentationAnalytics className="text-emerald-600" />,
+  },
+  {
+    label: "Métricas de salud",
+    href: "/metricas",
+    icon: <IconHeartbeat className="text-emerald-600" />,
+  },
+  {
+    label: "Registro de Comidas",
+    href: "/registro-comida",
+    icon: <IconApple className="text-emerald-600" />,
+  },
+  {
+    label: "Recomendaciones saludables",
+    href: "/recomendaciones",
+    icon: <IconChefHat className="text-emerald-600" />,
+  },
+  {
+    label: "Metas",
+    href: "/metas",
+    icon: <IconTarget className="text-emerald-600" />,
+  },
+  {
+    label: "Cerrar sesión",
+    href: "/auth/logout",
+    icon: <IconArrowLeft className="text-emerald-600" />,
+  },
+];
+
 
   return (
     <Sidebar>

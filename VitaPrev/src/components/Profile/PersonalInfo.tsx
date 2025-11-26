@@ -36,8 +36,11 @@ export default function PersonalInfoCard({ profile }: PersonalInfoCardProps) {
         <div className="flex justify-between gap-4">
           <dt className="text-slate-500">Fecha de nacimiento</dt>
           <dd className="font-medium text-slate-800">
-            {profile.birthDate || "-"}
+            {profile.birthDate
+            ? profile.birthDate.split("-").reverse().join("-")
+            : "-"}
           </dd>
+
         </div>
 
         <div className="flex justify-between gap-4">
