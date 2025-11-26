@@ -1,81 +1,115 @@
-import { useState, type SyntheticEvent } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import type { AxiosError } from "axios";
 import { useAuth } from "./useAuth";
 import AuthTabs from "./Authtabs";
 import DatePicker from "react-datepicker";
+import { useForm, Controller } from "react-hook-form";
+
+interface RegisterForm {
+  name: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  genre: string;
+  weight: string;
+  height: string;
+  allergies: string;
+  diabetic: boolean;
+  hypertensive: boolean;
+  birthDate: Date | null;
+  password: string;
+  confirmPassword: string;
+  lastGlucose: string;
+  lastPressure: string;
+}
 
 export default function RegisterPage() {
   const [error, setError] = useState("");
-  const [name, setName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [genre, setGenre] = useState("");
-  const [weight, setWeight] = useState("");
-  const [height, setHeight] = useState("");
-  const [allergies, setAllergies] = useState("");
-  const [diabetic, setDiabetic] = useState(false);
-  const [hypertensive, setHypertensive] = useState(false);
-  const [birthDate, setBirthDate] = useState<Date | null>(null);
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [lastGlucose, setLastGlucose] = useState("");
-  const [lastPressure, setLastPressure] = useState("");
-
   const navigate = useNavigate();
   const auth = useAuth();
 
-  const handleRegister = (e: SyntheticEvent) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    control,
+    watch,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterForm>({
+    defaultValues: {
+      name: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      genre: "",
+      weight: "",
+      height: "",
+      allergies: "",
+      diabetic: false,
+      hypertensive: false,
+      birthDate: null,
+      password: "",
+      confirmPassword: "",
+      lastGlucose: "",
+      lastPressure: "",
+    },
+  });
+
+  const diabetic = watch("diabetic");
+  const hypertensive = watch("hypertensive");
+
+  const onSubmit = async (data: RegisterForm) => {
     setError("");
 
-    if (password !== confirmPassword) {
+    if (data.password !== data.confirmPassword) {
       setError("Las contraseñas no coinciden");
       return;
     }
 
-    if (!birthDate) {
+    if (!data.birthDate) {
       setError("La fecha de nacimiento es obligatoria");
       return;
     }
 
-    if (diabetic && lastGlucose.trim() === "") {
+    if (data.diabetic && data.lastGlucose.trim() === "") {
       setError("Ingresa tu último registro de glucosa");
       return;
     }
 
-    if (hypertensive && lastPressure.trim() === "") {
+    if (data.hypertensive && data.lastPressure.trim() === "") {
       setError("Ingresa tu último registro de presión arterial");
       return;
     }
 
-    auth
-      .register(
-        name,
-        lastName,
-        email,
-        phone,
-        genre,
-        Number(weight),
-        Number(height),
-        birthDate,
-        allergies,
-        diabetic,
-        hypertensive,
-        lastGlucose,
-        lastPressure,
-        password
-      )
-      .then(() => navigate("/dashboard", { replace: true }))
-      .catch((err: AxiosError) => {
-        console.error("Signup error:", err.response?.status, err.response?.data);
-        setError(
-          typeof err.response?.data === "string"
-            ? err.response.data
-            : "Error al registrarse"
-        );
-      });
+    try {
+      await auth.register(
+        data.name,
+        data.lastName,
+        data.email,
+        data.phone,
+        data.genre,
+        Number(data.weight),
+        Number(data.height),
+        data.birthDate,
+        data.allergies,
+        data.diabetic,
+        data.hypertensive,
+        data.lastGlucose,
+        data.lastPressure,
+        data.password
+      );
+
+      navigate("/dashboard", { replace: true });
+    } catch (err) {
+      const axiosErr = err as AxiosError;
+      console.error("Signup error:", axiosErr.response?.status, axiosErr.response?.data);
+      setError(
+        typeof axiosErr.response?.data === "string"
+          ? axiosErr.response.data
+          : "Error al registrarse"
+      );
+    }
   };
 
   return (
@@ -99,9 +133,8 @@ export default function RegisterPage() {
             </div>
           )}
 
-          {/* 🔒 Formulario sin autocomplete */}
           <form
-            onSubmit={handleRegister}
+            onSubmit={handleSubmit(onSubmit)}
             className="space-y-4 text-sm"
             autoComplete="off"
           >
@@ -110,23 +143,25 @@ export default function RegisterPage() {
               <div>
                 <label className="block text-slate-700 mb-1">Nombre</label>
                 <input
-                  name="reg_name"
                   autoComplete="off"
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  {...register("name", { required: "El nombre es obligatorio" })}
                 />
+                {errors.name && (
+                  <p className="text-xs text-red-600 mt-1">{errors.name.message}</p>
+                )}
               </div>
 
               <div>
                 <label className="block text-slate-700 mb-1">Apellidos</label>
                 <input
-                  name="reg_lastName"
                   autoComplete="off"
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
+                  {...register("lastName", { required: "Los apellidos son obligatorios" })}
                 />
+                {errors.lastName && (
+                  <p className="text-xs text-red-600 mt-1">{errors.lastName.message}</p>
+                )}
               </div>
             </div>
 
@@ -136,23 +171,28 @@ export default function RegisterPage() {
                 <label className="block text-slate-700 mb-1">Correo</label>
                 <input
                   type="email"
-                  name="reg_email"
                   autoComplete="off"
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  value={email}
                   placeholder="tucorreo@ejemplo.com"
-                  onChange={(e) => setEmail(e.target.value)}
+                  {...register("email", {
+                    required: "El correo es obligatorio",
+                    pattern: {
+                      value: /^\S+@\S+$/,
+                      message: "Correo inválido",
+                    },
+                  })}
                 />
+                {errors.email && (
+                  <p className="text-xs text-red-600 mt-1">{errors.email.message}</p>
+                )}
               </div>
 
               <div>
                 <label className="block text-slate-700 mb-1">Teléfono</label>
                 <input
-                  name="reg_phone"
                   autoComplete="off"
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  {...register("phone")}
                 />
               </div>
             </div>
@@ -163,11 +203,9 @@ export default function RegisterPage() {
               <div>
                 <label className="block text-slate-700 mb-1">Género</label>
                 <select
-                  name="reg_genre"
                   autoComplete="off"
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  value={genre}
-                  onChange={(e) => setGenre(e.target.value)}
+                  {...register("genre")}
                 >
                   <option value="">Seleccionar</option>
                   <option value="masculino">Masculino</option>
@@ -181,17 +219,26 @@ export default function RegisterPage() {
                 <label className="block text-slate-700 mb-1">
                   Fecha de nacimiento
                 </label>
-
-                <DatePicker
-                  selected={birthDate}
-                  onChange={(date) => setBirthDate(date)}
-                  dateFormat="dd-MM-yyyy"
-                  placeholderText="dd-MM-yyyy"
-                  minDate={new Date(1900, 0, 1)}
-                  maxDate={new Date()}
-                  // el DatePicker ya suele poner autocomplete=off en el input interno
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                <Controller
+                  control={control}
+                  name="birthDate"
+                  render={({ field }) => (
+                    <DatePicker
+                      selected={field.value}
+                      onChange={(date) => field.onChange(date)}
+                      dateFormat="dd-MM-yyyy"
+                      placeholderText="dd-MM-yyyy"
+                      minDate={new Date(1900, 0, 1)}
+                      maxDate={new Date()}
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  )}
                 />
+                {errors.birthDate && (
+                  <p className="text-xs text-red-600 mt-1">
+                    La fecha de nacimiento es obligatoria
+                  </p>
+                )}
               </div>
 
               {/* Peso */}
@@ -199,18 +246,18 @@ export default function RegisterPage() {
                 <label className="block text-slate-700 mb-1">Peso (kg)</label>
                 <input
                   type="number"
-                  name="reg_weight"
                   autoComplete="off"
                   min={0}
                   max={300}
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  value={weight}
-                  onChange={(e) => {
-                    const value = Number(e.target.value);
-                    if (value < 0) return;
-                    setWeight(e.target.value);
-                  }}
+                  {...register("weight", {
+                    validate: (value) =>
+                      value === "" || Number(value) >= 0 || "Peso inválido",
+                  })}
                 />
+                {errors.weight && (
+                  <p className="text-xs text-red-600 mt-1">{errors.weight.message}</p>
+                )}
               </div>
 
               {/* Altura */}
@@ -218,13 +265,17 @@ export default function RegisterPage() {
                 <label className="block text-slate-700 mb-1">Altura (cm)</label>
                 <input
                   type="number"
-                  name="reg_height"
                   autoComplete="off"
                   min={0}
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  value={height}
-                  onChange={(e) => setHeight(e.target.value)}
+                  {...register("height", {
+                    validate: (value) =>
+                      value === "" || Number(value) >= 0 || "Altura inválida",
+                  })}
                 />
+                {errors.height && (
+                  <p className="text-xs text-red-600 mt-1">{errors.height.message}</p>
+                )}
               </div>
             </div>
 
@@ -232,12 +283,10 @@ export default function RegisterPage() {
             <div>
               <label className="block text-slate-700 mb-1">Alergias</label>
               <input
-                name="reg_allergies"
                 autoComplete="off"
                 className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                value={allergies}
-                onChange={(e) => setAllergies(e.target.value)}
                 placeholder="Ej. maní, mariscos..."
+                {...register("allergies")}
               />
             </div>
 
@@ -253,7 +302,7 @@ export default function RegisterPage() {
                         ? "border-emerald-500 bg-emerald-50 text-emerald-700"
                         : "border-slate-300 text-slate-600"
                     }`}
-                    onClick={() => setDiabetic(true)}
+                    onClick={() => setValue("diabetic", true)}
                   >
                     Sí
                   </button>
@@ -264,7 +313,7 @@ export default function RegisterPage() {
                         ? "border-emerald-500 bg-emerald-50 text-emerald-700"
                         : "border-slate-300 text-slate-600"
                     }`}
-                    onClick={() => setDiabetic(false)}
+                    onClick={() => setValue("diabetic", false)}
                   >
                     No
                   </button>
@@ -276,12 +325,10 @@ export default function RegisterPage() {
                     </label>
                     <input
                       type="number"
-                      name="reg_lastGlucose"
                       autoComplete="off"
-                      className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:ring-2 focus:ring-emerald-500"
-                      value={lastGlucose}
                       min={0}
-                      onChange={(e) => setLastGlucose(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:ring-2 focus:ring-emerald-500"
+                      {...register("lastGlucose")}
                     />
                   </div>
                 )}
@@ -297,7 +344,7 @@ export default function RegisterPage() {
                         ? "border-emerald-500 bg-emerald-50 text-emerald-700"
                         : "border-slate-300 text-slate-600"
                     }`}
-                    onClick={() => setHypertensive(true)}
+                    onClick={() => setValue("hypertensive", true)}
                   >
                     Sí
                   </button>
@@ -308,7 +355,7 @@ export default function RegisterPage() {
                         ? "border-emerald-500 bg-emerald-50 text-emerald-700"
                         : "border-slate-300 text-slate-600"
                     }`}
-                    onClick={() => setHypertensive(false)}
+                    onClick={() => setValue("hypertensive", false)}
                   >
                     No
                   </button>
@@ -320,12 +367,10 @@ export default function RegisterPage() {
                     </label>
                     <input
                       type="text"
-                      name="reg_lastPressure"
                       autoComplete="off"
                       placeholder="Ej. 120/80"
                       className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:ring-2 focus:ring-emerald-500"
-                      value={lastPressure}
-                      onChange={(e) => setLastPressure(e.target.value)}
+                      {...register("lastPressure")}
                     />
                   </div>
                 )}
@@ -337,12 +382,16 @@ export default function RegisterPage() {
               <label className="block text-slate-700 mb-1">Contraseña</label>
               <input
                 type="password"
-                name="reg_password"
                 autoComplete="new-password"
                 className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                {...register("password", {
+                  required: "La contraseña es obligatoria",
+                  minLength: { value: 6, message: "Mínimo 6 caracteres" },
+                })}
               />
+              {errors.password && (
+                <p className="text-xs text-red-600 mt-1">{errors.password.message}</p>
+              )}
             </div>
 
             {/* Confirmar contraseña */}
@@ -352,16 +401,24 @@ export default function RegisterPage() {
               </label>
               <input
                 type="password"
-                name="reg_password_confirm"
                 autoComplete="new-password"
                 className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                {...register("confirmPassword", {
+                  required: "Confirma tu contraseña",
+                })}
               />
+              {errors.confirmPassword && (
+                <p className="text-xs text-red-600 mt-1">
+                  {errors.confirmPassword.message}
+                </p>
+              )}
             </div>
 
-            <button className="w-full mt-1 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 transition-colors">
-              Crear cuenta
+            <button
+              className="w-full mt-1 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 transition-colors disabled:opacity-60"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Creando cuenta..." : "Crear cuenta"}
             </button>
           </form>
 

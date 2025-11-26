@@ -1,61 +1,90 @@
-import { useState, type SyntheticEvent, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import type { AxiosError } from "axios";
 import { useAuth } from "./useAuth";
 import AuthTabs from "./Authtabs";
+import { useForm } from "react-hook-form";
+
+interface LoginForm {
+  email: string;
+  password: string;
+}
 
 export default function LoginPage() {
   const [error, setError] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
   const [remember, setRemember] = useState(false);
 
   const navigate = useNavigate();
   const auth = useAuth();
 
-  
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginForm>({
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
   useEffect(() => {
     const saved = localStorage.getItem("vitaprev_remember_email");
     if (saved) {
-      setEmail(saved);
+      setValue("email", saved);
       setRemember(true);
     }
-  }, []);
+  }, [setValue]);
 
-  const handleLogin = (e: SyntheticEvent) => {
-    e.preventDefault();
-
+  const onSubmit = async (data: LoginForm) => {
     setError("");
 
-    auth
-      .login(email, password)
-      .then(() => {
-        
-        if (remember) {
-          localStorage.setItem("vitaprev_remember_email", email);
-        } else {
-          localStorage.removeItem("vitaprev_remember_email");
-        }
+    try {
+      await auth.login(data.email, data.password);
 
-        navigate("/dashboard", { replace: true });
-      })
-      .catch((error: AxiosError) => {
-        if (error.response?.status === 401) {
-          setError("Usuario o contraseña incorrecta");
-          return;
-        }
-        setError(error.message);
-      });
+      if (remember) {
+        localStorage.setItem("vitaprev_remember_email", data.email);
+      } else {
+        localStorage.removeItem("vitaprev_remember_email");
+      }
+
+      navigate("/dashboard", { replace: true });
+    } catch (err) {
+      const error = err as AxiosError<any>;
+
+      const backendMsg =
+        typeof error.response?.data === "string"
+          ? error.response.data
+          : error.response?.data?.message;
+
+      // Usuario NO existe o contraseña incorrecta
+      if (error.response?.status === 404 || error.response?.status === 401) {
+        setError(backendMsg ?? "Usuario o contraseña incorrecta");
+        return;
+      }
+
+      // Error interno del servidor
+      if (error.response?.status === 500) {
+        setError(
+          backendMsg ??
+            "Ocurrió un error en el servidor. Intenta nuevamente en unos minutos."
+        );
+        return;
+      }
+
+      // Cualquier otro error inesperado
+      setError(
+        backendMsg ??
+          "Ocurrió un error al iniciar sesión. Intenta nuevamente."
+      );
+    }
   };
 
   return (
     <div className="flex justify-center bg-emerald-50 py-10 min-h-screen items-start">
-
       <div className="w-full max-w-5xl grid grid-cols-1 gap-8 p-4 items-stretch justify-items-center">
-
         <div className="bg-white rounded-3xl shadow-md p-8 flex flex-col justify-start">
-
           <AuthTabs />
 
           <h2 className="text-lg font-semibold text-slate-800 mb-2">
@@ -71,40 +100,57 @@ export default function LoginPage() {
             </div>
           )}
 
-            <form
-            onSubmit={handleLogin}
+          <form
+            onSubmit={handleSubmit(onSubmit)}
             className="space-y-4"
             autoComplete="on"
           >
-
             {/* EMAIL */}
             <div className="space-y-1.5 text-sm">
-              <label htmlFor="email" className="block text-slate-600">Correo</label>
+              <label htmlFor="email" className="block text-slate-600">
+                Correo
+              </label>
               <input
                 id="email"
-                name="email"
                 type="email"
                 autoComplete="email"
                 className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 placeholder="tucorreo@ejemplo.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                {...register("email", {
+                  required: "El correo es obligatorio",
+                  pattern: {
+                    value: /^\S+@\S+$/,
+                    message: "Correo inválido",
+                  },
+                })}
               />
+              {errors.email && (
+                <p className="text-xs text-red-600 mt-1">
+                  {errors.email.message}
+                </p>
+              )}
             </div>
 
             {/* PASSWORD */}
             <div className="space-y-1.5 text-sm">
-              <label htmlFor="password" className="block text-slate-600">Contraseña</label>
+              <label htmlFor="password" className="block text-slate-600">
+                Contraseña
+              </label>
               <input
                 id="password"
-                name="password"
                 type="password"
                 autoComplete="current-password"
                 className="w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                {...register("password", {
+                  required: "La contraseña es obligatoria",
+                })}
               />
+              {errors.password && (
+                <p className="text-xs text-red-600 mt-1">
+                  {errors.password.message}
+                </p>
+              )}
             </div>
 
             {/* RECORDAR */}
@@ -115,20 +161,20 @@ export default function LoginPage() {
                 onChange={() => setRemember(!remember)}
                 className="w-3 h-3 border border-slate-300 rounded-sm checked:bg-emerald-500 checked:border-emerald-500 transition-all"
               />
-              <span className="text-slate-500">Recordarme en este dispositivo</span>
+              <span className="text-slate-500">
+                Recordarme en este dispositivo
+              </span>
             </div>
 
             {/* SUBMIT */}
             <button
               type="submit"
-              className="w-full py-2.5 mt-2 bg-emerald-600 rounded-xl text-white text-sm font-medium hover:bg-emerald-700 transition-colors"
+              className="w-full py-2.5 mt-2 bg-emerald-600 rounded-xl text-white text-sm font-medium hover:bg-emerald-700 transition-colors disabled:opacity-60"
+              disabled={isSubmitting}
             >
-              Iniciar sesión
+              {isSubmitting ? "Iniciando sesión..." : "Iniciar sesión"}
             </button>
-
           </form>
-
-
 
           <p className="mt-3 text-[12px] text-slate-500 text-center">
             ¿No tienes cuenta?{" "}
@@ -137,7 +183,6 @@ export default function LoginPage() {
             </Link>
           </p>
         </div>
-
       </div>
     </div>
   );
