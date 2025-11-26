@@ -7,6 +7,7 @@ import MetricsSummaryCards from "../MetricasSalud/MetricsSummaryCards";
 import GoalsSidebar from "../GoalPage/GoalSideBar";
 import FoodSidebar from "../FoodRegister/FoodSideBar";
 
+// ====== TYPES =========
 type GoalStatus = "IN_PROGRESS" | "COMPLETED" | "FAILED";
 type GoalDirection = "AUMENTO" | "DISMINUCION";
 type GoalType = "PESO" | "GLUCOSA" | "PRESION";
@@ -49,14 +50,117 @@ interface MetricasSaludResponseDto {
   recordDate: string; // yyyy-MM-dd
 }
 
-interface AdviceResponseDto {
-  id: number;
-  mensaje: string;
-  createdAt: string; // yyyy-MM-ddTHH:mm:ss
-  riesgo?: string;
+// ========= PARSERS (IGUALES A HealthMetricsPage) ==========
+
+const parseLocalDate = (raw: string) => {
+  if (!raw) return null;
+
+  if (raw.length === 10 && raw.includes("-")) {
+    const [y, m, d] = raw.split("-").map(Number);
+    return new Date(y, m - 1, d, 23, 59, 59);
+  }
+
+  const d = new Date(raw);
+  return isNaN(d.getTime()) ? null : d;
+};
+
+const formatDate = (raw: string) => {
+  if (!raw) return "—";
+
+  const date = parseLocalDate(raw);
+  if (!date) return "—";
+
+  const dd = String(date.getDate()).padStart(2, "0");
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const yy = date.getFullYear();
+
+  return `${dd}/${mm}/${yy}`;
+};
+
+const timeAgo = (raw: string) => {
+  const date = parseLocalDate(raw);
+  if (!date) return "—";
+
+  const now = new Date();
+
+  const isSameDay =
+    date.getFullYear() === now.getFullYear() &&
+    date.getMonth() === now.getMonth() &&
+    date.getDate() === now.getDate();
+
+  if (isSameDay) return "Hoy";
+
+  const yesterday = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() - 1
+  );
+
+  const isYesterday =
+    date.getFullYear() === yesterday.getFullYear() &&
+    date.getMonth() === yesterday.getMonth() &&
+    date.getDate() === yesterday.getDate();
+
+  if (isYesterday) return "Ayer";
+
+  const diff = now.getTime() - date.getTime();
+
+  const seconds = Math.floor(diff / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+  const weeks = Math.floor(days / 7);
+
+  if (seconds < 60) return "Justo ahora";
+  if (minutes < 60) return `Hace ${minutes} minuto${minutes === 1 ? "" : "s"}`;
+  if (hours < 24) return `Hace ${hours} hora${hours === 1 ? "" : "s"}`;
+  if (days < 7) return `Hace ${days} día${days === 1 ? "" : "s"}`;
+  if (weeks < 5) return `Hace ${weeks} semana${weeks === 1 ? "" : "s"}`;
+
+  return formatDate(raw);
+};
+
+// ========= OTROS HELPERS =========
+
+function todayIso(): string {
+  const d = new Date();
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+  return `${year}-${month}-${day}`;
 }
 
-// === helpers ===
+const getImcEstado = (bmi: number | null) => {
+  if (bmi == null || Number.isNaN(bmi)) {
+    return {
+      label: "Sin datos",
+      color: "bg-slate-100 text-slate-500 border border-slate-200",
+    };
+  }
+  if (bmi < 18.5) {
+    return {
+      label: "Bajo peso",
+      color: "bg-amber-50 text-amber-700 border border-amber-100",
+    };
+  }
+  if (bmi < 25) {
+    return {
+      label: "Saludable",
+      color: "bg-emerald-50 text-emerald-700 border border-emerald-100",
+    };
+  }
+  if (bmi < 30) {
+    return {
+      label: "Sobrepeso",
+      color: "bg-amber-50 text-amber-700 border border-amber-100",
+    };
+  }
+  return {
+    label: "Obesidad",
+    color: "bg-rose-50 text-rose-700 border border-rose-100",
+  };
+};
+
 const foodTypeLabel: Record<FoodType, string> = {
   DESAYUNO: "Desayuno",
   ALMUERZO: "Almuerzo",
@@ -71,86 +175,13 @@ const foodTypeChipClass: Record<FoodType, string> = {
   SNACK: "bg-sky-50 text-sky-700",
 };
 
-function formatDateForDisplay(isoDate: string) {
-  const parts = isoDate.split("-");
-  if (parts.length !== 3) return isoDate;
-  return `${parts[2]}-${parts[1]}-${parts[0]}`;
-}
-
 function formatTimeForDisplay(time: string) {
   return time?.slice(0, 5) ?? time;
 }
 
-function todayIso(): string {
-  const d = new Date();
-  const day = String(d.getDate()).padStart(2, "0");
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const year = d.getFullYear();
-  return `${year}-${month}-${day}`;
-}
-
-// timeAgo para MetricsSummaryCards
-function timeAgoFromIsoDate(raw: string): string {
-  if (!raw) return "—";
-  const parts = raw.split("-");
-  if (parts.length !== 3) return "—";
-
-  const [y, m, d] = parts.map(Number);
-  const date = new Date(y, m - 1, d);
-  if (Number.isNaN(date.getTime())) return "—";
-
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-  if (diffDays <= 0) return "Hoy";
-  if (diffDays === 1) return "Hace 1 día";
-  if (diffDays < 7) return `Hace ${diffDays} días`;
-
-  const diffWeeks = Math.floor(diffDays / 7);
-  if (diffWeeks === 1) return "Hace 1 semana";
-  if (diffWeeks < 5) return `Hace ${diffWeeks} semanas`;
-
-  const diffMonths = Math.floor(diffDays / 30);
-  if (diffMonths <= 1) return "Hace 1 mes";
-  return `Hace ${diffMonths} meses`;
-}
-
-// Estado visual del IMC para MetricsSummaryCards
-function getImcEstado(bmi: number | null): { label: string; color: string } {
-  if (bmi == null || Number.isNaN(bmi)) {
-    return {
-      label: "Sin datos",
-      color: "bg-slate-100 text-slate-500 border border-slate-200",
-    };
-  }
-
-  if (bmi < 18.5) {
-    return {
-      label: "Bajo peso",
-      color: "bg-amber-50 text-amber-700 border border-amber-100",
-    };
-  }
-
-  if (bmi < 25) {
-    return {
-      label: "Saludable",
-      color: "bg-emerald-50 text-emerald-700 border border-emerald-100",
-    };
-  }
-
-  if (bmi < 30) {
-    return {
-      label: "Sobrepeso",
-      color: "bg-amber-50 text-amber-700 border border-amber-100",
-    };
-  }
-
-  return {
-    label: "Obesidad",
-    color: "bg-rose-50 text-rose-700 border border-rose-100",
-  };
-}
+// ======================================
+// ============= COMPONENTE =============
+// ======================================
 
 const DashboardPage = () => {
   const [axiosApi] = useAxiosForApi();
@@ -160,56 +191,41 @@ const DashboardPage = () => {
   const [mealsToday, setMealsToday] = useState<FoodRecordResponseDto[]>([]);
   const [latestMetrics, setLatestMetrics] =
     useState<MetricasSaludResponseDto | null>(null);
-  const [latestAdvice, setLatestAdvice] =
-    useState<AdviceResponseDto | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // === Cargas en paralelo ===
+  // ============= LOAD DATA =============
   useEffect(() => {
     const fetchAll = async () => {
       setLoading(true);
       setError(null);
+
       try {
         const today = todayIso();
 
-        const [metasRes, mealsRes, metricsRes, adviceRes] = await Promise.all([
+        const [metasRes, mealsRes, metricsRes] = await Promise.all([
           axiosApi
             .get<GoalResponseDto[]>("/metas")
             .catch((e: AxiosError) => {
-              if (e.response?.status === 404) {
+              if (e.response?.status === 404)
                 return { data: [] as GoalResponseDto[] } as any;
-              }
-              throw e;
-            }),
-          axiosApi
-            .get<FoodRecordResponseDto[]>(
-              `/registro-comida/fecha/${today}`
-            )
-            .catch((e: AxiosError) => {
-              if (e.response?.status === 404) {
-                return { data: [] as FoodRecordResponseDto[] } as any;
-              }
               throw e;
             }),
 
-          // ⬇️ AQUÍ EL CAMBIO: usamos /metricas (lista) en lugar de /metricas-salud/ultima
+          axiosApi
+            .get<FoodRecordResponseDto[]>(`/registro-comida/fecha/${today}`)
+            .catch((e: AxiosError) => {
+              if (e.response?.status === 404)
+                return { data: [] as FoodRecordResponseDto[] } as any;
+              throw e;
+            }),
+
           axiosApi
             .get<MetricasSaludResponseDto[]>("/metricas")
             .catch((e: AxiosError) => {
-              if (e.response?.status === 404) {
+              if (e.response?.status === 404)
                 return { data: [] as MetricasSaludResponseDto[] } as any;
-              }
-              throw e;
-            }),
-
-          axiosApi
-            .get<AdviceResponseDto>("/consejos/ultimo")
-            .catch((e: AxiosError) => {
-              if (e.response?.status === 404) {
-                return { data: null } as any;
-              }
               throw e;
             }),
         ]);
@@ -217,24 +233,18 @@ const DashboardPage = () => {
         setGoals(metasRes.data ?? []);
         setMealsToday(mealsRes.data ?? []);
 
-        // === calcular última métrica a partir de la lista ===
         const metricsList = (metricsRes.data ?? []) as MetricasSaludResponseDto[];
 
         if (metricsList.length === 0) {
           setLatestMetrics(null);
         } else {
-          const latest = metricsList.reduce((acc, curr) => {
-            const [ay, am, ad] = acc.recordDate.split("-").map(Number);
-            const [cy, cm, cd] = curr.recordDate.split("-").map(Number);
-            const accDate = new Date(ay, am - 1, ad);
-            const currDate = new Date(cy, cm - 1, cd);
-            return currDate > accDate ? curr : acc;
-          }, metricsList[0]);
-
-          setLatestMetrics(latest);
+          const sorted = [...metricsList].sort(
+            (a, b) =>
+              parseLocalDate(b.recordDate)!.getTime() -
+              parseLocalDate(a.recordDate)!.getTime()
+          );
+          setLatestMetrics(sorted[0]);
         }
-
-        setLatestAdvice(adviceRes.data ?? null);
       } catch (err) {
         const axiosErr = err as AxiosError<any>;
         setError(
@@ -247,8 +257,7 @@ const DashboardPage = () => {
     };
 
     void fetchAll();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [axiosApi]);
 
   // === Derivados de metas ===
   const activeGoalsCount = useMemo(
@@ -298,7 +307,8 @@ const DashboardPage = () => {
   const imcActual = latestMetrics?.bmi ?? null;
   const imcEstado = getImcEstado(imcActual);
 
-  // === UI ===
+  // ========= UI =========
+
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="max-w-6xl mx-auto px-4 py-8">
@@ -309,13 +319,14 @@ const DashboardPage = () => {
               Panel diario de salud
             </h1>
             <p className="text-xs text-slate-500 mt-1">
-              Resumen de tus métricas, metas y alimentación. Todo en un solo lugar.
+              Resumen de tus métricas, metas y alimentación. Todo en un solo
+              lugar.
             </p>
           </div>
 
           <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 border border-emerald-100">
             <span className="text-xs text-emerald-700 font-medium">
-              Hoy · {formatDateForDisplay(todayIso())}
+              Hoy · {formatDate(todayIso())}
             </span>
           </div>
         </header>
@@ -332,21 +343,20 @@ const DashboardPage = () => {
           </div>
         ) : (
           <div className="space-y-6">
-            {/* Fila 1: resumen de métricas reutilizando MetricsSummaryCards */}
+            {/* Fila 1: resumen de métricas */}
             <section>
               <MetricsSummaryCards
                 ultimaMetrica={latestMetrics}
                 pesoActual={pesoActual}
                 imcActual={imcActual}
                 imcEstado={imcEstado}
-                formatDate={formatDateForDisplay}
-                timeAgo={timeAgoFromIsoDate}
+                formatDate={formatDate}
+                timeAgo={timeAgo}
               />
             </section>
 
-            {/* Fila 2: GoalsSidebar + FoodSidebar + Consejo VitaAI */}
+            {/* Fila 2: GoalsSidebar + FoodSidebar + tarjeta VitaAi estática */}
             <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              {/* Resumen metas */}
               <div className="lg:col-span-1">
                 <GoalsSidebar
                   activeGoalsCount={activeGoalsCount}
@@ -356,7 +366,6 @@ const DashboardPage = () => {
                 />
               </div>
 
-              {/* Resumen comidas */}
               <div className="lg:col-span-1">
                 <FoodSidebar
                   filteredCount={mealsToday.length}
@@ -364,11 +373,10 @@ const DashboardPage = () => {
                   totalProtein={totalProteinToday}
                   totalCarbs={totalCarbsToday}
                   totalFats={totalFatsToday}
-                  onOpenModal={() => navigate("/registro-comidas")}
+                  onOpenModal={() => navigate("/registro-comida")}
                 />
               </div>
 
-              {/* Consejo VitaAi */}
               <div className="bg-white rounded-2xl border border-emerald-100 shadow-sm p-4 relative overflow-hidden lg:col-span-1">
                 <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-emerald-50" />
                 <div className="relative">
@@ -379,35 +387,14 @@ const DashboardPage = () => {
                     </span>
                   </div>
 
-                  {latestAdvice ? (
-                    <>
-                      <p className="text-xs text-slate-500 mb-2">
-                        Generado a partir de tus métricas más recientes.
-                      </p>
-                      <p className="text-sm text-slate-800 leading-relaxed">
-                        {latestAdvice.mensaje}
-                      </p>
-
-                      <div className="mt-3 flex items-center justify-between text-[11px] text-slate-400">
-                        <span>
-                          Recibido el{" "}
-                          {latestAdvice.createdAt
-                            ? latestAdvice.createdAt.slice(0, 10)
-                            : "—"}
-                        </span>
-                        {latestAdvice.riesgo && (
-                          <span className="inline-flex items-center px-2 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-100">
-                            Nivel: {latestAdvice.riesgo}
-                          </span>
-                        )}
-                      </div>
-                    </>
-                  ) : (
-                    <p className="text-xs text-slate-500">
-                      Cuando registres nuevas métricas de salud, VitaAi
-                      generará aquí un consejo personalizado para ti.
-                    </p>
-                  )}
+                  <p className="text-xs text-slate-500 mb-2">
+                    Los consejos personalizados de VitaAi se envían
+                    actualmente a tu correo electrónico registrado.
+                  </p>
+                  <p className="text-sm text-slate-800 leading-relaxed">
+                    Revisa tu bandeja de entrada después de registrar nuevas
+                    métricas para ver las recomendaciones más recientes.
+                  </p>
                 </div>
               </div>
             </section>
@@ -441,67 +428,86 @@ const DashboardPage = () => {
                   </p>
                   {riskyMealsCount > 0 && (
                     <p className="text-[11px] text-rose-600 mb-1">
-                      ⚠️ {riskyMealsCount} comida(s) podrían no ser ideales para tu
-                      perfil.
+                      ⚠️ {riskyMealsCount} comida(s) podrían no ser ideales para
+                      tu perfil.
                     </p>
                   )}
 
-                  <div className="space-y-2 max-h-[260px] overflow-y-auto pr-1 mt-2">
+                  <div className="space-y-3 max-h-[260px] overflow-y-auto pr-1 mt-2">
                     {mealsToday.map((m) => {
                       const chipClass = foodTypeChipClass[m.foodType];
+                      const showAlertBadge =
+                        !m.aptoDiabetico || !m.aptoHipertenso;
 
                       return (
                         <article
                           key={m.id}
-                          className="border border-slate-100 rounded-xl px-3 py-2 flex items-start justify-between gap-2 hover:bg-slate-50/60 transition-colors"
+                          className="bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow p-4 flex items-center gap-5"
                         >
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-0.5">
-                              <span className="text-xs font-semibold text-slate-800 truncate">
-                                {m.nameFood}
-                              </span>
-                              <span
-                                className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${chipClass}`}
-                              >
-                                {foodTypeLabel[m.foodType]}
-                              </span>
-                            </div>
-                            <p className="text-[11px] text-slate-400">
-                              {formatTimeForDisplay(m.hour)}
-                            </p>
-                            {m.description && (
-                              <p className="mt-0.5 text-[11px] text-slate-600 line-clamp-2">
-                                {m.description}
-                              </p>
-                            )}
+                          {/* Timeline a la izquierda */}
+                          <div className="flex flex-col items-center">
+                            <div className="w-2 h-2 rounded-full bg-emerald-500 mt-1" />
+                            <div className="w-px flex-1 bg-slate-200 mt-1" />
                           </div>
 
-                          <div className="flex flex-col items-end gap-1 text-[11px]">
-                            {m.calories != null && (
-                              <span className="text-slate-600">
-                                {m.calories.toFixed(0)} kcal
-                              </span>
-                            )}
-                            {(m.protein != null ||
-                              m.carbs != null ||
-                              m.fats != null) && (
-                              <span className="text-slate-400">
-                                {m.protein != null
-                                  ? `${m.protein.toFixed(0)}P `
-                                  : ""}
-                                {m.carbs != null
-                                  ? `${m.carbs.toFixed(0)}C `
-                                  : ""}
-                                {m.fats != null
-                                  ? `${m.fats.toFixed(0)}G`
-                                  : ""}
-                              </span>
-                            )}
-                            {(!m.aptoDiabetico || !m.aptoHipertenso) && (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-100">
-                                ⚠️ revisar
-                              </span>
-                            )}
+                          <div className="flex items-center gap-4 flex-1">
+                            {/* Columna izquierda: nombre, tipo, fecha/hora, descripción */}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-3 mb-1">
+                                <div>
+                                  <p className="text-sm font-semibold text-slate-800">
+                                    {m.nameFood}
+                                  </p>
+                                  <p className="mt-0.5 text-[11px] text-slate-500">
+                                    {formatDate(m.date)} ·{" "}
+                                    {formatTimeForDisplay(m.hour)}
+                                  </p>
+                                </div>
+
+                                <div className="flex flex-col items-end gap-1">
+                                  <span
+                                    className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium ${chipClass}`}
+                                  >
+                                    {foodTypeLabel[m.foodType]}
+                                  </span>
+
+                                  {showAlertBadge && (
+                                    <span className="inline-flex items-center px-2 py-1 rounded-full bg-rose-50 text-[11px] font-medium text-rose-700 border border-rose-200">
+                                      ⚠️ Revisa esta elección
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                              {m.description && (
+                                <p className="mt-1 text-xs text-slate-600">
+                                  {m.description}
+                                </p>
+                              )}
+
+                              <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-slate-600">
+                                {m.calories != null && (
+                                  <span className="inline-flex items-center rounded-full bg-slate-50 px-2 py-1 border border-slate-100">
+                                    🔥 {m.calories.toFixed(0)} kcal
+                                  </span>
+                                )}
+                                {m.protein != null && (
+                                  <span className="inline-flex items-center rounded-full bg-slate-50 px-2 py-1 border border-slate-100">
+                                    💪 {m.protein.toFixed(1)} g proteína
+                                  </span>
+                                )}
+                                {m.carbs != null && (
+                                  <span className="inline-flex items-center rounded-full bg-slate-50 px-2 py-1 border border-slate-100">
+                                    🍞 {m.carbs.toFixed(1)} g carbos
+                                  </span>
+                                )}
+                                {m.fats != null && (
+                                  <span className="inline-flex items-center rounded-full bg-slate-50 px-2 py-1 border border-slate-100">
+                                    🧈 {m.fats.toFixed(1)} g grasas
+                                  </span>
+                                )}
+                              </div>
+                            </div>
                           </div>
                         </article>
                       );
