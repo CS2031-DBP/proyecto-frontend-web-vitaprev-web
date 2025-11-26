@@ -189,6 +189,34 @@ function formatTimeForDisplay(time: string) {
   return time?.slice(0, 5) ?? time;
 }
 
+const getPriorityBadge = (priority?: number | null) => {
+  if (!priority || priority < 1 || priority > 5) {
+    return {
+      label: "Sin prioridad",
+      className: "bg-slate-50 text-slate-500 border border-slate-200",
+    };
+  }
+
+  if (priority >= 4) {
+    return {
+      label: "Prioridad alta",
+      className: "bg-rose-50 text-rose-700 border border-rose-200",
+    };
+  }
+
+  if (priority === 3) {
+    return {
+      label: "Prioridad media",
+      className: "bg-amber-50 text-amber-700 border border-amber-200",
+    };
+  }
+
+  return {
+    label: "Prioridad baja",
+    className: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+  };
+};
+
 // ======================================
 // ============= COMPONENTE =============
 // ======================================
@@ -207,7 +235,7 @@ const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // ============= LOAD DATA =============
+  // ============= LOAD DATA ============
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const fetchAll = async () => {
@@ -245,11 +273,9 @@ const DashboardPage = () => {
           axiosApi
             .get<ConsejoPersonalizadoResponseDto>("/consejos/ultimo")
             .catch((e: AxiosError) => {
-              // Si no hay consejo aún, el backend puede responder 204 o 404 según cómo lo dejes.
               if (e.response?.status === 404 || e.response?.status === 204) {
                 return { data: null } as any;
               }
-              // Otros errores sí se consideran fallo real
               throw e;
             }),
         ]);
@@ -341,6 +367,7 @@ const DashboardPage = () => {
   const pesoActual = latestMetrics?.weight ?? null;
   const imcActual = latestMetrics?.bmi ?? null;
   const imcEstado = getImcEstado(imcActual);
+  const advicePriorityInfo = advice ? getPriorityBadge(advice.priority) : null;
 
   // ========= UI =========
 
@@ -424,12 +451,23 @@ const DashboardPage = () => {
 
                   {advice ? (
                     <>
-                      <p className="text-xs text-slate-500 mb-2">
-                        Último consejo de VitaAi ·{" "}
-                        <span className="font-medium">
-                          {timeAgo(advice.createdAt)}
-                        </span>
-                      </p>
+                      <div className="flex items-center justify-between mb-2 gap-2">
+                        <p className="text-xs text-slate-500">
+                          Último consejo de VitaAi ·{" "}
+                          <span className="font-medium">
+                            {timeAgo(advice.createdAt)}
+                          </span>
+                        </p>
+
+                        {advicePriorityInfo && (
+                          <span
+                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wide ${advicePriorityInfo.className}`}
+                          >
+                            {advicePriorityInfo.label}
+                          </span>
+                        )}
+                      </div>
+
                       <p className="text-sm text-slate-800 leading-relaxed">
                         {advice.message}
                       </p>
