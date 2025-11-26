@@ -50,6 +50,16 @@ interface MetricasSaludResponseDto {
   recordDate: string; // yyyy-MM-dd
 }
 
+interface ConsejoPersonalizadoResponseDto {
+  id: number;
+  title: string;
+  message: string;
+  category: string;
+  priority: number;
+  source: string;
+  createdAt: string; // ISO date-time
+}
+
 // ========= PARSERS (IGUALES A HealthMetricsPage) ==========
 
 const parseLocalDate = (raw: string) => {
@@ -191,11 +201,14 @@ const DashboardPage = () => {
   const [mealsToday, setMealsToday] = useState<FoodRecordResponseDto[]>([]);
   const [latestMetrics, setLatestMetrics] =
     useState<MetricasSaludResponseDto | null>(null);
+  const [advice, setAdvice] =
+    useState<ConsejoPersonalizadoResponseDto | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // ============= LOAD DATA =============
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const fetchAll = async () => {
       setLoading(true);
@@ -204,7 +217,7 @@ const DashboardPage = () => {
       try {
         const today = todayIso();
 
-        const [metasRes, mealsRes, metricsRes] = await Promise.all([
+        const [metasRes, mealsRes, metricsRes, adviceRes] = await Promise.all([
           axiosApi
             .get<GoalResponseDto[]>("/metas")
             .catch((e: AxiosError) => {
@@ -228,12 +241,24 @@ const DashboardPage = () => {
                 return { data: [] as MetricasSaludResponseDto[] } as any;
               throw e;
             }),
+
+          axiosApi
+            .get<ConsejoPersonalizadoResponseDto>("/consejos/ultimo")
+            .catch((e: AxiosError) => {
+              // Si no hay consejo aún, el backend puede responder 204 o 404 según cómo lo dejes.
+              if (e.response?.status === 404 || e.response?.status === 204) {
+                return { data: null } as any;
+              }
+              // Otros errores sí se consideran fallo real
+              throw e;
+            }),
         ]);
 
         setGoals(metasRes.data ?? []);
         setMealsToday(mealsRes.data ?? []);
 
-        const metricsList = (metricsRes.data ?? []) as MetricasSaludResponseDto[];
+        const metricsList =
+          (metricsRes.data ?? []) as MetricasSaludResponseDto[];
 
         if (metricsList.length === 0) {
           setLatestMetrics(null);
@@ -244,6 +269,16 @@ const DashboardPage = () => {
               parseLocalDate(a.recordDate)!.getTime()
           );
           setLatestMetrics(sorted[0]);
+        }
+
+        const adviceData = adviceRes.data as
+          | ConsejoPersonalizadoResponseDto
+          | null;
+
+        if (adviceData && adviceData.message) {
+          setAdvice(adviceData);
+        } else {
+          setAdvice(null);
         }
       } catch (err) {
         const axiosErr = err as AxiosError<any>;
@@ -257,7 +292,7 @@ const DashboardPage = () => {
     };
 
     void fetchAll();
-  }, [axiosApi]);
+  }, []); // <-- sin axiosApi para evitar el loop
 
   // === Derivados de metas ===
   const activeGoalsCount = useMemo(
@@ -355,7 +390,7 @@ const DashboardPage = () => {
               />
             </section>
 
-            {/* Fila 2: GoalsSidebar + FoodSidebar + tarjeta VitaAi estática */}
+            {/* Fila 2: GoalsSidebar + FoodSidebar + tarjeta VitaAi */}
             <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               <div className="lg:col-span-1">
                 <GoalsSidebar
@@ -387,14 +422,31 @@ const DashboardPage = () => {
                     </span>
                   </div>
 
-                  <p className="text-xs text-slate-500 mb-2">
-                    Los consejos personalizados de VitaAi se envían
-                    actualmente a tu correo electrónico registrado.
-                  </p>
-                  <p className="text-sm text-slate-800 leading-relaxed">
-                    Revisa tu bandeja de entrada después de registrar nuevas
-                    métricas para ver las recomendaciones más recientes.
-                  </p>
+                  {advice ? (
+                    <>
+                      <p className="text-xs text-slate-500 mb-2">
+                        Último consejo de VitaAi ·{" "}
+                        <span className="font-medium">
+                          {timeAgo(advice.createdAt)}
+                        </span>
+                      </p>
+                      <p className="text-sm text-slate-800 leading-relaxed">
+                        {advice.message}
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-xs text-slate-500 mb-2">
+                        VitaAi analizará tus próximas métricas para compartirte
+                        consejos personalizados sobre tu bienestar.
+                      </p>
+                      <p className="text-sm text-slate-800 leading-relaxed">
+                        Cuando registres nuevas métricas de salud, aquí verás el
+                        último mensaje que VitaAi haya generado para ti, para
+                        ayudarte a tomar decisiones más conscientes día a día.
+                      </p>
+                    </>
+                  )}
                 </div>
               </div>
             </section>
