@@ -40,7 +40,7 @@ function MainContent() {
     <main
       className={cn(
         "flex-1 p-6 ml-0 transition-all duration-300",
-        open ? "md:ml-[280px]" : "md:ml-20" // 280px abierto, 80px cerrado
+        open ? "md:ml-[280px]" : "md:ml-20" 
       )}
     >
       <Outlet />
@@ -109,7 +109,6 @@ export default function Layout() {
           />
         </SidebarBody>
 
-        {/* contenido principal que se mueve con el sidebar */}
         <MainContent />
       </div>
     </Sidebar>

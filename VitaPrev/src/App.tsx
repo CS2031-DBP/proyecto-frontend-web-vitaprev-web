@@ -12,6 +12,7 @@ import GoalsPage from "./components/GoalPage/GoalPage";
 import FoodRecommendationsPage from "./components/FoodRecom/RecommendationPage";
 import FoodLogPage from "./components/FoodRegister/FoodPage";
 import DashboardPage from "./components/Dashboard/Dashboard";
+import NotFound from "./components/NotFound";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route path="/auth/signup" element={<Register />} />
         <Route path="/auth/signin" element={<Login />} />
 
+        {/* PRIVADAS */}
         <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
           <Route path="/dashboard" element={<DashboardPage/>} />
           <Route path="/metricas" element={<HealthMetricsPage />} />
@@ -31,6 +33,9 @@ function App() {
           <Route path="/user/me" element={<ProfilePage />} />
           <Route path="/auth/logout" element={<Logout />} />
         </Route>
+
+        {/* CATCH-ALL: 404 */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </AuthProvider>
   );

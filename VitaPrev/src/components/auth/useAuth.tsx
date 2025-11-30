@@ -33,7 +33,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useLocalStorage("token", "");
   const [expiresOn, setExpiresOn] = useLocalStorage("expiresOn", "");
 
-  // NOTE: FOR THESE CASES, WE CANNOT USE useAxiosForApi BECAUSE THE AUTH CONTEXT IS EMPTY
   const register = async (
   name: string,
   lastName: string,
@@ -52,11 +51,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 ) => {
   console.debug("registering", email);
 
-  const day = birthDate.getDate().toString().padStart(2, "0");       // "01"..."31"
-  const month = (birthDate.getMonth() + 1).toString().padStart(2, "0"); // "01"..."12"
+  const day = birthDate.getDate().toString().padStart(2, "0");      
+  const month = (birthDate.getMonth() + 1).toString().padStart(2, "0"); 
   const year = birthDate.getFullYear();
 
-  const formattedBirthDate = `${day}-${month}-${year}`;     // dd-MM-yyyy
+  const formattedBirthDate = `${day}-${month}-${year}`;    
 
   const normalizedAllergies =
     allergies.trim() === "" ? null : allergies.trim();

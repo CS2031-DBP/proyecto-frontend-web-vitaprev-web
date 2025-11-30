@@ -3,7 +3,6 @@ import { useState } from "react";
 export const useLocalStorage = (keyName: string, defaultValue: string): [string, (value: string) => void] => {
     const [storedValue, setStoredValue] = useState(() => {
         try {
-            // try to get the value
             const value = window.localStorage.getItem(keyName);
             if (value) {
                 return value;
