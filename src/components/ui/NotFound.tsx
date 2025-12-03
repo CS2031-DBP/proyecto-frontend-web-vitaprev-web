@@ -20,13 +20,6 @@ export default function NotFound() {
       <p className="mt-4 text-slate-600 text-sm sm:text-base">
         Uy… parece que te perdiste 🍃
       </p>
-
-      <a
-        href="/dashboard"
-        className="mt-6 px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition"
-      >
-        Volver al inicio
-      </a>
     </div>
   );
 }
