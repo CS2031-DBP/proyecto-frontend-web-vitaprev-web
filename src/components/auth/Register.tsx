@@ -3,7 +3,17 @@ import { Link, useNavigate } from "react-router-dom";
 import type { AxiosError } from "axios";
 import { useForm, Controller } from "react-hook-form";
 import DatePicker from "react-datepicker";
-import { IoCallOutline, IoPersonOutline, IoCalendarOutline, IoAccessibilityOutline, IoScaleOutline, IoAlertCircleOutline, IoWaterOutline, IoHeartOutline, IoChevronBack } from "react-icons/io5";
+import {
+  IoCallOutline,
+  IoPersonOutline,
+  IoCalendarOutline,
+  IoAccessibilityOutline,
+  IoScaleOutline,
+  IoAlertCircleOutline,
+  IoWaterOutline,
+  IoHeartOutline,
+  IoChevronBack,
+} from "react-icons/io5";
 
 import { useAuth } from "./useAuth";
 
@@ -205,6 +215,7 @@ export default function RegisterPage() {
 
   const renderStepContent = () => {
     if (step === 0) {
+      // 👇 Aquí ya va Apellidos debajo de Nombre SIEMPRE
       return (
         <>
           <h2 className="text-xl font-semibold text-emerald-950 mb-1">
@@ -214,7 +225,7 @@ export default function RegisterPage() {
             Esto nos ayuda a personalizar tu experiencia en VitaPrev.
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="space-y-3">
             <div>
               <label className="block text-emerald-950 text-xs mb-1">
                 Nombre
@@ -354,7 +365,7 @@ export default function RegisterPage() {
               <p className={labelText}>Teléfono</p>
               <input
                 autoComplete="off"
-                placeholder="Opcional"
+                placeholder="987654321"
                 className="w-full bg-transparent text-sm text-slate-900 focus:outline-none"
                 {...register("phone")}
               />
@@ -620,7 +631,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-[#ecfdf5] flex items-center justify-center px-4 py-6 sm:py-10">
       <div className="w-full max-w-3xl">
-        <div className="bg-white rounded-[24px] shadow-md border border-emerald-100 px-4 py-5 sm:px-6 sm:py-6">
+        <div className="bg-white rounded-3xl shadow-md border border-emerald-100 px-4 py-5 sm:px-6 sm:py-6">
           {/* Header y progreso */}
           <div className="flex items-center gap-3 mb-4">
             <button
@@ -638,15 +649,16 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          <div className="mb-4">
-            <h1 className="text-lg sm:text-xl font-semibold text-emerald-950">
-              Personaliza tu experiencia en VitaPrev 💚
-            </h1>
-            <p className="text-[11px] sm:text-xs text-slate-500 mt-1">
-              Configura tus datos básicos y de salud para recomendaciones personalizadas.
-            </p>
-          </div>
-
+          {step === 0 && (
+            <div className="mb-4">
+              <h1 className="text-lg sm:text-xl font-semibold text-emerald-950">
+                Personaliza tu experiencia en VitaPrev 💚
+              </h1>
+              <p className="text-[11px] sm:text-xs text-slate-500 mt-1">
+                Configura tus datos básicos y de salud para recomendaciones personalizadas.
+              </p>
+            </div>
+          )}
           {error && (
             <div className="mb-4 text-[11px] text-red-700 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
               {error}
