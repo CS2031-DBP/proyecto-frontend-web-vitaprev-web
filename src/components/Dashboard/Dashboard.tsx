@@ -227,84 +227,84 @@ const DashboardPage = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchAll = async () => {
-      setLoading(true);
-      setError(null);
+  const fetchAll = async () => {
+    setLoading(true);
+    setError(null);
 
-      try {
-        const today = todayIso();
+    try {
+      const today = todayIso();
 
-        const [metasRes, mealsRes, metricsRes, adviceRes] = await Promise.all([
-          axiosApi
-            .get<GoalResponseDto[]>("/metas")
-            .catch((e: AxiosError) => {
-              if (e.response?.status === 404)
-                return { data: [] as GoalResponseDto[] } as any;
-              throw e;
-            }),
-          axiosApi
-            .get<FoodRecordResponseDto[]>(`/registro-comida/fecha/${today}`)
-            .catch((e: AxiosError) => {
-              if (e.response?.status === 404)
-                return { data: [] as FoodRecordResponseDto[] } as any;
-              throw e;
-            }),
-          axiosApi
-            .get<MetricasSaludResponseDto[]>("/metricas")
-            .catch((e: AxiosError) => {
-              if (e.response?.status === 404)
-                return { data: [] as MetricasSaludResponseDto[] } as any;
-              throw e;
-            }),
-          axiosApi
-            .get<ConsejoPersonalizadoResponseDto>("/consejos/ultimo")
-            .catch((e: AxiosError) => {
-              if (e.response?.status === 404 || e.response?.status === 204) {
-                return { data: null } as any;
-              }
-              throw e;
-            }),
-        ]);
+      const [metasRes, mealsRes, metricsRes, adviceRes] = await Promise.all([
+        axiosApi
+          .get<GoalResponseDto[]>("/metas")
+          .catch((e: AxiosError) => {
+            if (e.response?.status === 404)
+              return { data: [] as GoalResponseDto[] } as any;
+            throw e;
+          }),
+        axiosApi
+          .get<FoodRecordResponseDto[]>(`/registro-comida/fecha/${today}`)
+          .catch((e: AxiosError) => {
+            if (e.response?.status === 404)
+              return { data: [] as FoodRecordResponseDto[] } as any;
+            throw e;
+          }),
+        axiosApi
+          .get<MetricasSaludResponseDto[]>("/metricas")
+          .catch((e: AxiosError) => {
+            if (e.response?.status === 404)
+              return { data: [] as MetricasSaludResponseDto[] } as any;
+            throw e;
+          }),
+        axiosApi
+          .get<ConsejoPersonalizadoResponseDto>("/consejos/ultimo")
+          .catch((e: AxiosError) => {
+            if (e.response?.status === 404 || e.response?.status === 204) {
+              return { data: null } as any;
+            }
+            throw e;
+          }),
+      ]);
 
-        setGoals(metasRes.data ?? []);
-        setMealsToday(mealsRes.data ?? []);
+      setGoals(metasRes.data ?? []);
+      setMealsToday(mealsRes.data ?? []);
 
-        const metricsList =
-          (metricsRes.data ?? []) as MetricasSaludResponseDto[];
+      const metricsList =
+        (metricsRes.data ?? []) as MetricasSaludResponseDto[];
 
-        if (metricsList.length === 0) {
-          setLatestMetrics(null);
-        } else {
-          const sorted = [...metricsList].sort(
-            (a, b) =>
-              parseLocalDate(b.recordDate)!.getTime() -
-              parseLocalDate(a.recordDate)!.getTime()
-          );
-          setLatestMetrics(sorted[0]);
-        }
-
-        const adviceData = adviceRes.data as
-          | ConsejoPersonalizadoResponseDto
-          | null;
-
-        if (adviceData && adviceData.message) {
-          setAdvice(adviceData);
-        } else {
-          setAdvice(null);
-        }
-      } catch (err) {
-        const axiosErr = err as AxiosError<any>;
-        setError(
-          axiosErr.response?.data?.message ||
-            "No se pudo cargar el resumen de tu día."
+      if (metricsList.length === 0) {
+        setLatestMetrics(null);
+      } else {
+        const sorted = [...metricsList].sort(
+          (a, b) =>
+            parseLocalDate(b.recordDate)!.getTime() -
+            parseLocalDate(a.recordDate)!.getTime()
         );
-      } finally {
-        setLoading(false);
+        setLatestMetrics(sorted[0]);
       }
-    };
 
-    void fetchAll();
-  }, [axiosApi]);
+      const adviceData = adviceRes.data as
+        | ConsejoPersonalizadoResponseDto
+        | null;
+
+      if (adviceData && adviceData.message) {
+        setAdvice(adviceData);
+      } else {
+        setAdvice(null);
+      }
+    } catch (err) {
+      const axiosErr = err as AxiosError<any>;
+      setError(
+        axiosErr.response?.data?.message ||
+          "No se pudo cargar el resumen de tu día."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  void fetchAll();
+}, []);
 
   const activeGoalsCount = useMemo(
     () => goals.filter((g) => g.status === "IN_PROGRESS").length,
