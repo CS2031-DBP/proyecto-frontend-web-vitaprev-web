@@ -1,5 +1,3 @@
-// MealTypeQuickActions.tsx
-
 import type { MealType } from "./FoodRecomTypes";
 import { MEAL_TYPES } from "./FoodRecomTypes";
 

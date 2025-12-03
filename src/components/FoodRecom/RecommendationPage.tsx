@@ -21,8 +21,8 @@ const FoodRecommendationsPage = () => {
       id: 1,
       role: "assistant",
       text:
-        "Hola, soy VitaAI 🤖🥗\n"+
-        "Estoy aquí para ayudarte a tomar mejores decisiones alimenticias.\n"+
+        "Hola, soy VitaAI 🤖🥗\n" +
+        "Estoy aquí para ayudarte a tomar mejores decisiones alimenticias.\n" +
         "Selecciona el tipo de comida y te brindaré recomendaciones adaptadas a tus necesidades de salud.",
     },
   ]);
@@ -34,7 +34,6 @@ const FoodRecommendationsPage = () => {
   const messageIdRef = useRef(2);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
-  // Auto-scroll al último mensaje
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({
@@ -53,15 +52,15 @@ const FoodRecommendationsPage = () => {
     setError(null);
     setLastTipo(tipo);
 
-    const label = tipo === "DESAYUNO"
-      ? "Desayuno"
-      : tipo === "ALMUERZO"
-      ? "Almuerzo"
-      : tipo === "CENA"
-      ? "Cena"
-      : "Snack";
+    const label =
+      tipo === "DESAYUNO"
+        ? "Desayuno"
+        : tipo === "ALMUERZO"
+        ? "Almuerzo"
+        : tipo === "CENA"
+        ? "Cena"
+        : "Snack";
 
-    // Mensaje usuario
     pushMessage({
       role: "user",
       text: label,
@@ -136,8 +135,8 @@ const FoodRecommendationsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex justify-center">
-      <div className="w-full max-w-5xl px-8 py-8">
+    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6">
+      <div className="mx-auto w-full max-w-5xl">
         <FoodRecommendationsHeader />
 
         {error && (
@@ -147,7 +146,6 @@ const FoodRecommendationsPage = () => {
         )}
 
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col h-[540px]">
-          {/* Área de mensajes */}
           <div className="flex-1 px-4 py-4 overflow-y-auto">
             {messages.map((m) => (
               <FoodRecommendationMessage key={m.id} message={m} />
@@ -177,7 +175,6 @@ const FoodRecommendationsPage = () => {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Botones rápidos */}
           <MealTypeQuickActions
             lastTipo={lastTipo}
             loading={loading}

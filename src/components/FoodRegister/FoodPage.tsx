@@ -177,60 +177,62 @@ const FoodLogPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
-      <FoodSidebar
-        filteredCount={filteredRecords.length}
-        totalCalories={totalCalories}
-        totalProtein={totalProtein}
-        totalCarbs={totalCarbs}
-        totalFats={totalFats}
-        onOpenModal={handleOpenModal}
-      />
-
-      <main className="flex-1 px-8 py-8">
-        {error && (
-          <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-700">
-            {error}
-          </div>
-        )}
-
-        <FoodFilterBar
-          filterType={filterType}
-          onChangeFilterType={setFilterType}
+    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6">
+      <div className="mx-auto flex w-full max-w-6xl flex-col md:flex-row gap-6">
+        <FoodSidebar
+          filteredCount={filteredRecords.length}
+          totalCalories={totalCalories}
+          totalProtein={totalProtein}
+          totalCarbs={totalCarbs}
+          totalFats={totalFats}
+          onOpenModal={handleOpenModal}
         />
 
-        {loading ? (
-          <div className="flex items-center justify-center py-16 text-slate-500 text-sm">
-            Cargando tus registros de comida...
-          </div>
-        ) : filteredRecords.length === 0 ? (
-          <FoodEmptyState onOpenModal={handleOpenModal} />
-        ) : (
-          <FoodRecordList records={filteredRecords} onDelete={handleDelete} />
-        )}
+        <main className="flex-1 rounded-2xl bg-white border border-slate-100 px-6 py-6">
+          {error && (
+            <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-700">
+              {error}
+            </div>
+          )}
 
-        <FoodRecordModal
-          isOpen={isModalOpen}
-          submitting={submitting}
-          formError={formError}
-          nameFood={nameFood}
-          foodType={foodType}
-          description={description}
-          calories={calories}
-          protein={protein}
-          carbs={carbs}
-          fats={fats}
-          onChangeNameFood={setNameFood}
-          onChangeFoodType={setFoodType}
-          onChangeDescription={setDescription}
-          onChangeCalories={setCalories}
-          onChangeProtein={setProtein}
-          onChangeCarbs={setCarbs}
-          onChangeFats={setFats}
-          onClose={handleCloseModal}
-          onSubmit={handleSubmit}
-        />
-      </main>
+          <FoodFilterBar
+            filterType={filterType}
+            onChangeFilterType={setFilterType}
+          />
+
+          {loading ? (
+            <div className="flex items-center justify-center py-16 text-slate-500 text-sm">
+              Cargando tus registros de comida...
+            </div>
+          ) : filteredRecords.length === 0 ? (
+            <FoodEmptyState onOpenModal={handleOpenModal} />
+          ) : (
+            <FoodRecordList records={filteredRecords} onDelete={handleDelete} />
+          )}
+
+          <FoodRecordModal
+            isOpen={isModalOpen}
+            submitting={submitting}
+            formError={formError}
+            nameFood={nameFood}
+            foodType={foodType}
+            description={description}
+            calories={calories}
+            protein={protein}
+            carbs={carbs}
+            fats={fats}
+            onChangeNameFood={setNameFood}
+            onChangeFoodType={setFoodType}
+            onChangeDescription={setDescription}
+            onChangeCalories={setCalories}
+            onChangeProtein={setProtein}
+            onChangeCarbs={setCarbs}
+            onChangeFats={setFats}
+            onClose={handleCloseModal}
+            onSubmit={handleSubmit}
+          />
+        </main>
+      </div>
     </div>
   );
 };

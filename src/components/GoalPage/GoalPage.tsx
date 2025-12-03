@@ -25,7 +25,6 @@ const GoalsPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Modal / formulario
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [type, setType] = useState<GoalType>("PESO");
   const [direction, setDirection] = useState<GoalDirection>("DISMINUCION");
@@ -78,7 +77,6 @@ const GoalsPage = () => {
 
   useEffect(() => {
     fetchGoals();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSubmit = async (e: FormEvent) => {
@@ -177,49 +175,51 @@ const GoalsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
-      <GoalsSidebar
-        activeGoalsCount={activeGoalsCount}
-        completedGoalsCount={completedGoalsCount}
-        failedGoalsCount={failedGoalsCount}
-        onCreateClick={handleOpenModal}
-      />
-
-      <main className="flex-1 px-8 py-8">
-        {error && (
-          <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-700">
-            {error}
-          </div>
-        )}
-
-        {loading ? (
-          <div className="flex items-center justify-center py-16 text-slate-500 text-sm">
-            Cargando tus metas...
-          </div>
-        ) : goals.length === 0 ? (
-          <GoalsEmptyState onCreateClick={handleOpenModal} />
-        ) : (
-          <GoalsList goals={goals} onDelete={handleDelete} />
-        )}
-
-        <GoalModal
-          isOpen={isModalOpen}
-          type={type}
-          direction={direction}
-          targetValue={targetValue}
-          currentValue={currentValue}
-          deadlineDate={deadlineDate}
-          formError={formError}
-          submitting={submitting}
-          onTypeChange={setType}
-          onDirectionChange={setDirection}
-          onTargetChange={setTargetValue}
-          onCurrentChange={setCurrentValue}
-          onDeadlineChange={setDeadlineDate}
-          onClose={handleCloseModal}
-          onSubmit={handleSubmit}
+    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6">
+      <div className="mx-auto flex w-full max-w-6xl flex-col md:flex-row gap-6">
+        <GoalsSidebar
+          activeGoalsCount={activeGoalsCount}
+          completedGoalsCount={completedGoalsCount}
+          failedGoalsCount={failedGoalsCount}
+          onCreateClick={handleOpenModal}
         />
-      </main>
+
+        <main className="flex-1 rounded-2xl bg-white border border-slate-100 px-6 py-6">
+          {error && (
+            <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-700">
+              {error}
+            </div>
+          )}
+
+          {loading ? (
+            <div className="flex items-center justify-center py-16 text-slate-500 text-sm">
+              Cargando tus metas...
+            </div>
+          ) : goals.length === 0 ? (
+            <GoalsEmptyState onCreateClick={handleOpenModal} />
+          ) : (
+            <GoalsList goals={goals} onDelete={handleDelete} />
+          )}
+
+          <GoalModal
+            isOpen={isModalOpen}
+            type={type}
+            direction={direction}
+            targetValue={targetValue}
+            currentValue={currentValue}
+            deadlineDate={deadlineDate}
+            formError={formError}
+            submitting={submitting}
+            onTypeChange={setType}
+            onDirectionChange={setDirection}
+            onTargetChange={setTargetValue}
+            onCurrentChange={setCurrentValue}
+            onDeadlineChange={setDeadlineDate}
+            onClose={handleCloseModal}
+            onSubmit={handleSubmit}
+          />
+        </main>
+      </div>
     </div>
   );
 };

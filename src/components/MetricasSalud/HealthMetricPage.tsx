@@ -1,3 +1,4 @@
+import type React from "react";
 import { useEffect, useMemo, useState } from "react";
 import { useAxiosForApi } from "../hooks/useAxiosForApi";
 
@@ -288,54 +289,56 @@ const HealthMetricsPage = () => {
   const imcEstado = getImcEstado();
 
   return (
-    <div className="space-y-6">
-      <MetricsHeader onCreateClick={openCreateModal} />
+    <div className="min-h-screen bg-linear-to-b from-emerald-50 via-white to-emerald-50 py-10 px-4 sm:px-6 flex justify-center">
+      <div className="w-full max-w-5xl space-y-6">
+        <MetricsHeader onCreateClick={openCreateModal} />
 
-      {error && (
-        <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-700">
-          {error}
-        </div>
-      )}
+        {error && (
+          <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-700">
+            {error}
+          </div>
+        )}
 
-      <MetricsSummaryCards
-        ultimaMetrica={ultimaMetrica}
-        pesoActual={pesoActual}
-        imcActual={imcActual}
-        imcEstado={imcEstado}
-        formatDate={formatDate}
-        timeAgo={timeAgo}
-      />
+        <MetricsSummaryCards
+          ultimaMetrica={ultimaMetrica}
+          pesoActual={pesoActual}
+          imcActual={imcActual}
+          imcEstado={imcEstado}
+          formatDate={formatDate}
+          timeAgo={timeAgo}
+        />
 
-      <MetricsHistory
-        todayInput={todayInput}
-        filterDate={filterDate}
-        filterPesoMin={filterPesoMin}
-        filterPesoMax={filterPesoMax}
-        setFilterDate={setFilterDate}
-        setFilterPesoMin={setFilterPesoMin}
-        setFilterPesoMax={setFilterPesoMax}
-        resetFilters={resetFilters}
-        metricasFiltradas={metricasFiltradas}
-        paginatedMetricas={paginatedMetricas}
-        loading={loading}
-        formatDate={formatDate}
-        openEditModal={openEditModal}
-        showingFrom={showingFrom}
-        showingTo={showingTo}
-        pageCount={pageCount}
-        currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
-      />
+        <MetricsHistory
+          todayInput={todayInput}
+          filterDate={filterDate}
+          filterPesoMin={filterPesoMin}
+          filterPesoMax={filterPesoMax}
+          setFilterDate={setFilterDate}
+          setFilterPesoMin={setFilterPesoMin}
+          setFilterPesoMax={setFilterPesoMax}
+          resetFilters={resetFilters}
+          metricasFiltradas={metricasFiltradas}
+          paginatedMetricas={paginatedMetricas}
+          loading={loading}
+          formatDate={formatDate}
+          openEditModal={openEditModal}
+          showingFrom={showingFrom}
+          showingTo={showingTo}
+          pageCount={pageCount}
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+        />
 
-      <MetricsModal
-        isOpen={isModalOpen}
-        mode={modalMode}
-        loading={loading}
-        form={form}
-        onChange={handleFormChange}
-        onClose={closeModal}
-        onSubmit={handleSubmit}
-      />
+        <MetricsModal
+          isOpen={isModalOpen}
+          mode={modalMode}
+          loading={loading}
+          form={form}
+          onChange={handleFormChange}
+          onClose={closeModal}
+          onSubmit={handleSubmit}
+        />
+      </div>
     </div>
   );
 };

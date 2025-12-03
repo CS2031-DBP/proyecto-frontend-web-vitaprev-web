@@ -7,7 +7,6 @@ import HealthInfoCard from "./HealthInfo";
 import ProfileSummary from "./Summary";
 import ProfileHeader from "./Header";
 
-
 export default function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -21,13 +20,9 @@ export default function ProfilePage() {
     axios
       .get<UserProfile>("/user/me", {
         baseURL: constants.API_HOST,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       })
-      .then((res) => {
-        setProfile(res.data);
-      })
+      .then((res) => setProfile(res.data))
       .finally(() => setLoading(false));
   }, [token]);
 
@@ -45,29 +40,21 @@ export default function ProfilePage() {
       </div>
     );
 
-  const weightDisplay =
-    profile.weight != null ? `${profile.weight} kg` : "-";
+  const weightDisplay = profile.weight ? `${profile.weight} kg` : "-";
+  const heightDisplay = profile.height ? `${profile.height} cm` : "-";
+  const glucoseDisplay = profile.glucoseLevel
+    ? `${profile.glucoseLevel} mg/dL`
+    : "-";
 
-  const heightDisplay =
-    profile.height != null ? `${profile.height} cm` : "-";
-
-  const glucoseDisplay =
-    profile.glucoseLevel != null ? `${profile.glucoseLevel} mg/dL` : "-";
-
-  const bpDisplay =
-    profile.bloodPressure && profile.bloodPressure.trim().length > 0
-      ? profile.bloodPressure
-      : "-";
+  const bpDisplay: string = profile.bloodPressure?.trim() || "-";
 
   return (
     <div className="min-h-screen bg-linear-to-b from-emerald-50 via-white to-emerald-50 py-10 px-4 sm:px-6 flex justify-center">
       <div className="w-full max-w-4xl bg-white border border-emerald-100 shadow-xl shadow-emerald-100/60 rounded-3xl p-6 sm:p-8 md:p-10">
-        {/* HEADER */}
         <ProfileHeader name={profile.name} lastName={profile.lastName} />
-        {/* Divider */}
+
         <div className="h-px bg-linear-to-r from-transparent via-emerald-100 to-transparent mb-8" />
 
-        {/* FORM EDICIÓN */}
         {isEditing && (
           <EditProfileForm
             profile={profile}
@@ -79,10 +66,8 @@ export default function ProfilePage() {
           />
         )}
 
-        {/* Vista solo cuando NO estás editando */}
         {!isEditing && (
           <>
-            {/* 🔹 Resumen rápido ahora es un componente */}
             <ProfileSummary
               weightDisplay={weightDisplay}
               heightDisplay={heightDisplay}
@@ -90,10 +75,8 @@ export default function ProfilePage() {
               bpDisplay={bpDisplay}
             />
 
-            {/* GRID PRINCIPAL */}
             <main className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <PersonalInfoCard profile={profile} />
-
               <HealthInfoCard
                 profile={profile}
                 weightDisplay={weightDisplay}
@@ -103,16 +86,13 @@ export default function ProfilePage() {
               />
             </main>
 
-            {/* BOTÓN EDITAR */}
-            <footer className="mt-10 flex flex-col sm:flex-row justify-between gap-3">
-              <div className="flex gap-3 justify-end w-full sm:w-auto">
-                <button
-                  className="px-5 py-2.5 rounded-xl bg-emerald-600 text-sm font-medium text-white hover:bg-emerald-700 transition"
-                  onClick={() => setIsEditing(true)}
-                >
-                  Editar perfil
-                </button>
-              </div>
+            <footer className="mt-10 flex justify-end gap-3">
+              <button
+                className="px-5 py-2.5 rounded-xl bg-emerald-600 text-sm font-medium text-white hover:bg-emerald-700 transition"
+                onClick={() => setIsEditing(true)}
+              >
+                Editar perfil
+              </button>
             </footer>
           </>
         )}

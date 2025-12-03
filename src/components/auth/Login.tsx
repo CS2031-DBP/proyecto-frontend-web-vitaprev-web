@@ -58,13 +58,11 @@ export default function LoginPage() {
           ? error.response.data
           : error.response?.data?.message;
 
-      // Usuario NO existe o contraseña incorrecta
       if (error.response?.status === 404 || error.response?.status === 401) {
         setError(backendMsg ?? "Usuario o contraseña incorrecta");
         return;
       }
 
-      // Error interno del servidor
       if (error.response?.status === 500) {
         setError(
           backendMsg ??
@@ -73,7 +71,6 @@ export default function LoginPage() {
         return;
       }
 
-      // Cualquier otro error inesperado
       setError(
         backendMsg ??
           "Ocurrió un error al iniciar sesión. Intenta nuevamente."
@@ -82,9 +79,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex justify-center bg-emerald-50 py-10 min-h-screen items-start">
-      <div className="w-full max-w-5xl grid grid-cols-1 gap-8 p-4 items-stretch justify-items-center">
-        <div className="bg-white rounded-3xl shadow-md p-8 flex flex-col justify-start">
+    <div className="min-h-screen bg-emerald-50 py-10 px-4 sm:px-6 flex items-center">
+      <div className="w-full max-w-5xl mx-auto">
+        <div className="bg-white rounded-3xl shadow-md p-6 sm:p-8 flex flex-col justify-start">
           <AuthTabs />
 
           <h2 className="text-lg font-semibold text-slate-800 mb-2">
@@ -105,7 +102,6 @@ export default function LoginPage() {
             className="space-y-4"
             autoComplete="on"
           >
-            {/* EMAIL */}
             <div className="space-y-1.5 text-sm">
               <label htmlFor="email" className="block text-slate-600">
                 Correo
@@ -131,7 +127,6 @@ export default function LoginPage() {
               )}
             </div>
 
-            {/* PASSWORD */}
             <div className="space-y-1.5 text-sm">
               <label htmlFor="password" className="block text-slate-600">
                 Contraseña
@@ -153,7 +148,6 @@ export default function LoginPage() {
               )}
             </div>
 
-            {/* RECORDAR */}
             <div className="flex items-center gap-2 text-xs">
               <input
                 type="checkbox"
@@ -166,7 +160,6 @@ export default function LoginPage() {
               </span>
             </div>
 
-            {/* SUBMIT */}
             <button
               type="submit"
               className="w-full py-2.5 mt-2 bg-emerald-600 rounded-xl text-white text-sm font-medium hover:bg-emerald-700 transition-colors disabled:opacity-60"

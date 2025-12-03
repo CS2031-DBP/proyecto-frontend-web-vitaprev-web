@@ -113,9 +113,9 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex justify-center bg-emerald-50 py-10 min-h-[80vh]">
-      <div className="w-full max-w-5xl grid grid-cols-1 auto-rows-max gap-8 p-4 justify-items-center">
-        <div className="bg-white rounded-3xl shadow-md p-8 flex flex-col justify-start">
+    <div className="min-h-screen bg-emerald-50 py-10 px-4 sm:px-6 flex items-center">
+      <div className="w-full max-w-5xl mx-auto">
+        <div className="bg-white rounded-3xl shadow-md p-6 sm:p-8">
           <AuthTabs />
 
           <div className="mb-6">
@@ -138,7 +138,6 @@ export default function RegisterPage() {
             className="space-y-4 text-sm"
             autoComplete="off"
           >
-            {/* Nombre y Apellidos */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
                 <label className="block text-slate-700 mb-1">Nombre</label>
@@ -165,7 +164,6 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Email & Teléfono */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
                 <label className="block text-slate-700 mb-1">Correo</label>
@@ -197,9 +195,7 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Género - Fecha - Peso - Altura */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {/* Género */}
               <div>
                 <label className="block text-slate-700 mb-1">Género</label>
                 <select
@@ -214,7 +210,6 @@ export default function RegisterPage() {
                 </select>
               </div>
 
-              {/* Fecha nacimiento */}
               <div>
                 <label className="block text-slate-700 mb-1">
                   Fecha de nacimiento
@@ -241,7 +236,6 @@ export default function RegisterPage() {
                 )}
               </div>
 
-              {/* Peso */}
               <div>
                 <label className="block text-slate-700 mb-1">Peso (kg)</label>
                 <input
@@ -260,7 +254,6 @@ export default function RegisterPage() {
                 )}
               </div>
 
-              {/* Altura */}
               <div>
                 <label className="block text-slate-700 mb-1">Altura (cm)</label>
                 <input
@@ -279,7 +272,6 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Alergias */}
             <div>
               <label className="block text-slate-700 mb-1">Alergias</label>
               <input
@@ -290,7 +282,6 @@ export default function RegisterPage() {
               />
             </div>
 
-            {/* Diabetes / Hipertensión */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
               <div>
                 <p className="text-slate-700 mb-1">¿Diabetes?</p>
@@ -377,7 +368,6 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Contraseña */}
             <div>
               <label className="block text-slate-700 mb-1">Contraseña</label>
               <input
@@ -394,7 +384,6 @@ export default function RegisterPage() {
               )}
             </div>
 
-            {/* Confirmar contraseña */}
             <div>
               <label className="block text-slate-700 mb-1">
                 Confirmar contraseña

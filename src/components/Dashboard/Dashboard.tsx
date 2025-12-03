@@ -7,7 +7,6 @@ import MetricsSummaryCards from "../MetricasSalud/MetricsSummaryCards";
 import GoalsSidebar from "../GoalPage/GoalSideBar";
 import FoodSidebar from "../FoodRegister/FoodSideBar";
 
-// ====== TYPES =========
 type GoalStatus = "IN_PROGRESS" | "COMPLETED" | "FAILED";
 type GoalDirection = "AUMENTO" | "DISMINUCION";
 type GoalType = "PESO" | "GLUCOSA" | "PRESION";
@@ -28,8 +27,8 @@ type FoodType = "DESAYUNO" | "ALMUERZO" | "CENA" | "SNACK";
 interface FoodRecordResponseDto {
   id: number;
   nameFood: string;
-  date: string; // yyyy-MM-dd
-  hour: string; // HH:mm:ss
+  date: string;
+  hour: string;
   foodType: FoodType;
   description: string | null;
   calories: number | null;
@@ -47,7 +46,7 @@ interface MetricasSaludResponseDto {
   bmi: number;
   glucoseLevel: number | null;
   bloodPressure: string | null;
-  recordDate: string; // yyyy-MM-dd
+  recordDate: string;
 }
 
 interface ConsejoPersonalizadoResponseDto {
@@ -57,10 +56,8 @@ interface ConsejoPersonalizadoResponseDto {
   category: string;
   priority: number;
   source: string;
-  createdAt: string; // ISO date-time
+  createdAt: string;
 }
-
-// ========= PARSERS (IGUALES A HealthMetricsPage) ==========
 
 const parseLocalDate = (raw: string) => {
   if (!raw) return null;
@@ -129,8 +126,6 @@ const timeAgo = (raw: string) => {
 
   return formatDate(raw);
 };
-
-// ========= OTROS HELPERS =========
 
 function todayIso(): string {
   const d = new Date();
@@ -217,10 +212,6 @@ const getPriorityBadge = (priority?: number | null) => {
   };
 };
 
-// ======================================
-// ============= COMPONENTE =============
-// ======================================
-
 const DashboardPage = () => {
   const [axiosApi] = useAxiosForApi();
   const navigate = useNavigate();
@@ -235,8 +226,6 @@ const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // ============= LOAD DATA ============
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const fetchAll = async () => {
       setLoading(true);
@@ -253,7 +242,6 @@ const DashboardPage = () => {
                 return { data: [] as GoalResponseDto[] } as any;
               throw e;
             }),
-
           axiosApi
             .get<FoodRecordResponseDto[]>(`/registro-comida/fecha/${today}`)
             .catch((e: AxiosError) => {
@@ -261,7 +249,6 @@ const DashboardPage = () => {
                 return { data: [] as FoodRecordResponseDto[] } as any;
               throw e;
             }),
-
           axiosApi
             .get<MetricasSaludResponseDto[]>("/metricas")
             .catch((e: AxiosError) => {
@@ -269,7 +256,6 @@ const DashboardPage = () => {
                 return { data: [] as MetricasSaludResponseDto[] } as any;
               throw e;
             }),
-
           axiosApi
             .get<ConsejoPersonalizadoResponseDto>("/consejos/ultimo")
             .catch((e: AxiosError) => {
@@ -318,9 +304,8 @@ const DashboardPage = () => {
     };
 
     void fetchAll();
-  }, []); // <-- sin axiosApi para evitar el loop
+  }, [axiosApi]);
 
-  // === Derivados de metas ===
   const activeGoalsCount = useMemo(
     () => goals.filter((g) => g.status === "IN_PROGRESS").length,
     [goals]
@@ -334,7 +319,6 @@ const DashboardPage = () => {
     [goals]
   );
 
-  // === Derivados de comidas de hoy ===
   const totalCaloriesToday = useMemo(
     () => mealsToday.reduce((sum, m) => sum + (m.calories ?? 0), 0),
     [mealsToday]
@@ -363,18 +347,14 @@ const DashboardPage = () => {
     [mealsToday]
   );
 
-  // Para MetricsSummaryCards
   const pesoActual = latestMetrics?.weight ?? null;
   const imcActual = latestMetrics?.bmi ?? null;
   const imcEstado = getImcEstado(imcActual);
   const advicePriorityInfo = advice ? getPriorityBadge(advice.priority) : null;
 
-  // ========= UI =========
-
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Header del dashboard */}
+    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6">
+      <div className="max-w-6xl mx-auto">
         <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
           <div>
             <h1 className="text-xl sm:text-2xl font-semibold text-slate-900">
@@ -405,7 +385,6 @@ const DashboardPage = () => {
           </div>
         ) : (
           <div className="space-y-6">
-            {/* Fila 1: resumen de métricas */}
             <section>
               <MetricsSummaryCards
                 ultimaMetrica={latestMetrics}
@@ -417,7 +396,6 @@ const DashboardPage = () => {
               />
             </section>
 
-            {/* Fila 2: GoalsSidebar + FoodSidebar + tarjeta VitaAi */}
             <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               <div className="lg:col-span-1">
                 <GoalsSidebar
@@ -489,7 +467,6 @@ const DashboardPage = () => {
               </div>
             </section>
 
-            {/* Fila 3: lista detallada de comidas de hoy */}
             <section className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-sm font-semibold text-slate-900">
@@ -534,14 +511,12 @@ const DashboardPage = () => {
                           key={m.id}
                           className="bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow p-4 flex items-center gap-5"
                         >
-                          {/* Timeline a la izquierda */}
                           <div className="flex flex-col items-center">
                             <div className="w-2 h-2 rounded-full bg-emerald-500 mt-1" />
                             <div className="w-px flex-1 bg-slate-200 mt-1" />
                           </div>
 
                           <div className="flex items-center gap-4 flex-1">
-                            {/* Columna izquierda: nombre, tipo, fecha/hora, descripción */}
                             <div className="flex-1 min-w-0">
                               <div className="flex items-start justify-between gap-3 mb-1">
                                 <div>
